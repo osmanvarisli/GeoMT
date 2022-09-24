@@ -1,0 +1,17 @@
+<div class="row">
+    <div class="col-md-8">
+
+        <img src="../k-means.png?r={{parametreler.rnd}}" width="100%">
+    </div>
+    <div class="col-md-4">
+        {% for row in range(parametreler.k_means_group_count) %}
+        <a href="../k_means_group_table/" query="{{row}}" data-toggle="modal" data-target="#modal" data-remote="false" class="btn btn-default">
+            Group {{row}}
+        </a>
+        {% endfor %}
+
+    </div>
+  </div>
+
+
+

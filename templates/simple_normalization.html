@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Normalization Data 
+{% endblock %}
+
+{% block head %}
+{{parametreler.acc_Code}} Normalization Data 
+{% endblock %}
+
+{% block body %}
+
+<script>
+    function delete_row(i){
+        var table = document.getElementById("table_grup").deleteRow(i);
+
+
+    }
+    function j_add(){
+        function toggle(source) {
+            checkboxes = document.getElementsByName('foo');
+            s="";
+            for(var i=0, n=checkboxes.length;i<n;i++) {
+                if (checkboxes[i].checked){
+                    
+                    s=s+checkboxes[i].value+' ,';
+                    checkboxes[i].checked=false;
+                }
+            }
+            return s;    
+        }
+
+        if (document.getElementsByName("grupad")[0].value==""){
+            alert("Group name not entered")
+        }
+        else{
+            gruplar=toggle(this);
+            if(gruplar==''){
+                alert ("No selection.");
+            }
+            else{
+                var table = document.getElementById("table_grup");
+                var row = table.insertRow(1);
+                
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                
+                text=document.getElementsByName("grupad")[0].value
+                text=text.replace(/[^a-z0-9]/gi,'-');
+                cell1.innerHTML = text;
+                cell2.innerHTML = gruplar; 
+                cell3.innerHTML = '<button onclick="delete_row(1)">Delete</button>'; 
+                document.getElementsByName("grupad")[0].value=""
+            }
+        }
+    } 
+</script>
+
+
+<script>
+
+    function createJson(){
+        let table = document.getElementById('table_grup');
+        var json_obj={"pj":[]};
+        var2='';
+        var1='';
+
+        for (let i = 1; i < table.rows.length; i++) { 
+            var0 = table.rows.item(i).cells.item(0).innerHTML.trim();
+            var1 = table.rows.item(i).cells.item(1).innerHTML.trim();
+            var1=var1.substring(0, var1.length-2); 
+            json_obj['pj'].push({"grupAd":var0,"grup":var1}); 
+
+            //json_obj['grupAd']=var0
+            //json_obj['grup']=var1
+        }
+        //alert(JSON.stringify(json_obj) )
+        return json_obj 
+    }
+
+    function sendJSON(){
+        let table = document.getElementById('table_grup');
+        
+        if (table.rows.length<2){
+            alert('You must create at least 2 groups')
+        }
+        else{
+            showPleaseWait("Parsing is in progress, please wait")
+
+            j=createJson();
+            form=document.getElementById('norm_form')
+            document.getElementsByName('grp_json')[0].value=JSON.stringify(j);
+            form.submit()            
+        }
+
+
+
+        //var data = JSON.stringify({ "name": name, "email": email });
+    }
+</script>
+
+<div class="container-fluid " style="height: 400px;"> 
+    <div class="border border-success" id="sol_katman" style="overflow: scroll;">
+
+        <table class="table table-sm table-hover ">
+            <colgroup>
+                {% for col in parametreler.column_names %}
+                 
+                    {% if col == 'ID_REF' %}
+                        <col class="renk2">
+                    {% elif col == 'IDENTIFIER' %}
+                        <col class="renk3">
+                    {% else %}
+                        <col class="yesil1x">
+                    {% endif %}
+                {% endfor %}
+        
+            </colgroup>
+            <thead class="renk3x">
+            <tr>
+                {% for col in parametreler.column_names %}
+                <th> 
+                    {% if col == 'ID_REF' or col == 'IDENTIFIER' %}
+                        {{col}}
+                    {% else %}   
+                        <input type="checkbox" id="{{col}}" name="foo" value="{{col}}"> Norm_{{col}}
+                    {% endif %}
+                    </th>
+                {% endfor %}
+            </tr>
+            </thead>
+            {% for row in parametreler.norm_row_data %}
+            <tr>
+                {% for col, row_ in zip(parametreler.norm_column_names, row) %}
+                <td>{{row_}}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+
+        </table>
+
+    </div>     
+    <div class="border border-success" id="sag_katman" style="overflow: scroll;"> 
+
+            
+            <div class="input-group">
+                <input type="text" placeholder="Group Name" class="form-control" name="grupad"  >
+                <span class="input-group-btn">
+                    <input type="button" name="add" value="Add" class="btn btn-primary"  onclick="j_add()">
+                 </span>
+            </div>
+
+            <br/>
+           
+            <form action="/group/" method="POST" id="norm_form">
+                <input type="hidden" name="grp_json">
+                <input type="hidden" name="acc_Code" value="{{parametreler.acc_Code}}">
+                <input type="hidden" name="Platform" value="{{parametreler.Platform}}">
+                
+                <button onclick="sendJSON()" class="btn btn-success" type="button" >Define Groups</button>
+            </form> 
+
+            <br/>
+
+            <table id="table_grup" class="table table-sm table-hover">
+                <tr>
+                    <th>Group Name</th>
+                    <th>Members</th>
+                    <th></th>
+                </tr>
+            </table>
+    </div>
+</div>
+
+{% endblock %}

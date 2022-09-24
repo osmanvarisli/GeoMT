@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Error
+{% endblock %}
+
+{% block head %}
+Error
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-4" ></div>
+        <div class="col-sm-4" >
+            <div class="alert alert-danger" role="alert">
+                {{err}}
+            </div>
+            <p>Ok, don't panic, an error occurred. I can solve the problem if you want to send me an e-mail</p>
+            <p>osmanvarisli@yahoo.com</p>
+        </div>
+        <div class="col-sm-4" ></div>
+    </div>
+</div>
+{% endblock %}

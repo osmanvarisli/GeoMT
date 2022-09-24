@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Grouped Normalization data
+{% endblock %}
+
+{% block head %}
+Grouped Normalization data
+{% endblock %}
+
+{% block body %}
+
+<script>
+  //csv oluştur.
+  function excel_aktar(dosya_ad){
+      $.ajax({
+        type:"POST",
+        url:"../export_csv/",
+        data:{
+          dosya_ad:dosya_ad          
+        }, 
+        success:function(data){
+          //alert('osman')
+          var blob = new Blob ([data], {"type": "text/x-csv"});
+                    var a = document.createElement ('a');
+                    a.download = 'Download.csv';
+                    a.href = window.URL.createObjectURL (blob);
+                    a.click ();
+                    
+        },
+        error: function (err) { alert(err.responseText); }   
+      });
+  }
+</script>
+<script>
+var islem=true;  
+function j_load(acc_C,grup_s,uye){
+  j=document.getElementsByName('grp_json')[0].value;
+  $.ajax({
+    type:"POST",
+    url:"/ajax_load/",
+    data:{
+      acc_Code:acc_C,
+      grp_json: JSON.stringify(j),
+      grup_sec:grup_s,
+      no:$('#table-'+uye).find("tr").length-1
+      
+    }, 
+    success:function(data){
+      html=data;
+      $('#table-'+uye+' tbody').append(html);
+      $("#pleaseWaitDialog").modal("hide");
+      islem=true;
+    },
+    error: function (err) { alert(err.responseText); }   
+  });
+
+}
+
+  $(document).ready(function(){
+    {% for uye in grup_list %}
+              $("#{{uye}}").scroll(function(){
+                    if(islem && $("#{{uye}}").scrollTop() + $("#{{uye}}").innerHeight() >= $("#{{uye}}")[0].scrollHeight) {
+                      islem=false;
+                      showPleaseWait('Data is loading....');  
+                      j_load('{{acc_Code}}','{{loop.index-1}}','{{uye}}');  
+                    }
+              });
+
+    {% endfor %}
+  });
+
+  $(document).ready(function(){
+    {% for uye in grup_list %}
+          showPleaseWait('Data is loading....');  
+          j_load('{{acc_Code}}','{{loop.index-1}}','{{uye}}');  
+    {% endfor %}
+  });
+</script>
+
+<div class="container-fluid"> 
+  <div class="border border-success" id="sol_katman">
+
+
+
+
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        {% for uye in grup_list %}
+          {% if loop.index==1 %}
+            <li class="nav-item active">
+
+          {%else%}
+            <li class="nav-item "> 
+          {%endif%} 
+          <a class="nav-link " data-toggle="tab" href="#{{uye}}" role="tab">{{uye}}</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+
+    <div class="tab-content" id="myTabContent">
+      {% for uye in grup_list %}
+        {% if loop.index==1 %}
+          <div class="tab-pane fade in active" id="{{uye}}" style="overflow: scroll;height: 500px;" toogle="{{loop.index-1}}">
+        {%else%}
+          <div class="tab-pane fade" id="{{uye}}" style="overflow: scroll;height: 500px;" toogle="{{loop.index-1}}">
+        {%endif%} 
+
+              <button onclick="excel_aktar('{{uye}}')" class="btn btn-primary">Export to CSV</button>
+              
+              <table class="table table-sm table-hover " id="table-{{uye}}">
+                <colgroup>
+                    <col class="renk3">
+
+                  {% for col in column_names[loop.index-1] %}
+                    {% if col == 'ID_REF' %}
+                      <col class="renk2">
+                    {% elif col =='C' %} 
+                    <col class="renk1">
+                    {% elif col in renklencek_alanlar %} 
+                        <col class="yesil2">
+                    {% else %}
+                        <col class="yesil1">
+                    {% endif %}
+                  {% endfor %}
+          
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>No</th>
+                  {% for col in column_names[loop.index-1] %}
+                        <th>  {{col}} </th>
+                  {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+             
+                {#
+                {% for row in row_data[loop.index-1] %}
+                  <tr>
+                      {% for  row_ in row %}
+                        <td>{{row_}}</td>
+                      {% endfor %}
+                  </tr>
+                  {% endfor %}
+                #} 
+                
+              </table>
+             {#
+              Bütün Sutun Toplam :{{ butun_stutun_toplam }}<br> 
+              Ortalama :{{ ortalama }} <br>
+              Sutun Toplamaları :{{ d_df_sutun_toplam[loop.index-1] }} 
+              #}
+          </div>
+      {% endfor %}
+
+    </div>
+  </div>     
+  <div class="border border-success" id="sag_katman"> 
+      <script>
+          function sendJSON(){
+            showPleaseWait("Parsing is in progress, please wait")
+            form=document.getElementById('fold_change_form')
+            form.submit()  
+          } 
+
+      </script>  
+
+      <!-- K-Means -->
+      <div class="panel panel-default">
+        <div class="panel-heading">Create Foldchange</div>
+        <div class="panel-body">
+
+              <form method="POST" action="/fold_change/" id="fold_change_form" >
+                  Select the control group :
+                  <select name="control" id="control">
+                    {% for uye in grup_list %}
+                    {% if "Averages" != uye %}
+                    <option value="{{uye}}">{{uye}}</option>
+                    {%endif%}
+                    {% endfor %}
+                  </select> 
+                  <br>
+                  <button  onclick="create_fold_change()" id="foldchance" class="btn btn-success"> Create Foldchange</button>
+                  <input type="hidden" value="{{grp_json}}" name="grp_json">
+              </form>
+
+        </div>
+      </div>
+
+
+
+      <!--
+        K-Means istersen burda aktif edebilirsin
+      <div class="modal fade" id="modal_K-means">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">K-Means</h4>
+                </div>
+                <div class="modal-body">
+                    ssssss
+                </div>
+
+            </div>
+        </div>
+      </div>
+
+      
+      <div class="panel panel-default">
+        <div class="panel-heading">K-Means</div>
+        <div class="panel-body">
+
+          <div class="form-group">
+            <label for="usr">Group Count:</label>
+            <input type="text" class="form-control" id="k_means_group_count" name="k_means_group_count">
+          </div>
+      
+          <a href="/grafik/normalization-kmeans/" data-toggle="modal" data-target="#modal_K-means" data-remote="false" class="btn btn-success">
+            Kemans
+          </a>
+        </div>
+      </div> 
+      
+      <script>
+    
+        $("#modal_K-means").on("hide.bs.modal", function() {
+            $(this).find(".modal-body").html('<div class="progress progress-striped active" style="margin-bottom:0;"><div class="progress-bar" style="width: 100%"></div></div>')
+        });
+    
+        $("#modal_K-means").on("show.bs.modal", function(e) {
+          var link = $(e.relatedTarget);
+            $(this).find(".modal-body").html('Please wait. Loading graph. <br><div class="progress progress-striped active" style="margin-bottom:0;"><div class="progress-bar" style="width: 100%"></div></div>')
+    
+            $(this).find(".modal-body").load(link.attr("href")+$("#k_means_group_count").val());
+    
+        });
+    
+      </script>
+      -->
+  </div>
+  
+{% endblock %}

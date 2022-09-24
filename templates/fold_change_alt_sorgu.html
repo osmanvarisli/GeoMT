@@ -1,0 +1,91 @@
+<script>
+    function excel_aktar(dosya_ad){
+        s=document.getElementsByName('sorgu')[0].value;
+        $.ajax({
+          type:"POST",
+          url:"../export_csv/",
+          data:{
+            dosya_ad:dosya_ad,
+            up:{{up}},
+            down:{{down}},
+            sorgu:s
+            
+          }, 
+          success:function(data){
+            var blob = new Blob ([data], {"type": "text/x-csv"});
+                      var a = document.createElement ('a');
+                      a.download = 'Download.csv';
+                      a.href = window.URL.createObjectURL (blob);
+                      a.click ();
+          },
+          error: function (err) { alert(err.responseText); }   
+        });
+    }
+  var islem=true;  
+  function j_alt_sorgu_load(uye){
+    j=document.getElementsByName('column_names')[0].value;
+    s=document.getElementsByName('sorgu')[0].value;
+    $.ajax({
+      type:"POST",
+      url:"/fold_change_ajax_load/",
+      data:{
+        grup_ad:uye,
+        no:$('#table-foldchange_alt_sorgu').find("tr").length-1,
+        up:{{up}},
+        down:{{down}},
+        column_names:j,
+        sorgu:s,
+        gelen_yer:"alt_sorgu",
+        xsort:'{{xsort}}',
+        xsort_asc_desc: '{{xsort_asc_desc}}',
+        id_ref:'{{id_ref}}',
+        max_p_value:$("#max_p_value").val()         
+      }, 
+      success:function(data){
+        html=data;
+        $('#table-foldchange_alt_sorgu tbody').append(html);
+        $("#pleaseWaitDialog").modal("hide");
+        islem=true;
+      },
+      error: function (err) { alert(err.responseText); }   
+    });
+  }
+  
+    $(document).ready(function(){
+                $("#foldchange_alt_sorgu").scroll(function(){
+                      if(islem && $("#foldchange_alt_sorgu").scrollTop() + $("#foldchange_alt_sorgu").innerHeight() >= $("#foldchange_alt_sorgu")[0].scrollHeight) {
+                        islem=false;
+                        showPleaseWait('Data is loading....');  
+                        j_alt_sorgu_load('foldchange');  
+                      }
+                });
+    });
+  
+    $(document).ready(function(){
+            showPleaseWait('Data is loading....');  
+            j_alt_sorgu_load('foldchange');  
+    });
+  </script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12" >
+            <div id="foldchange_alt_sorgu" style="overflow: scroll;height: 500px;" toogle="">
+                <table class="table table-sm table-hover " id="table-foldchange_alt_sorgu">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                    {% for col in column_names_title %}
+                    <th>  {{col}} </th>
+                    {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>                
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" value="{{sorgu}}" name="sorgu">

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Main Page
+{% endblock %}
+
+{% block head %}
+GEOMT(GEO Microarray Tool) 
+{% endblock %}
+
+{% block body %}
+<script>
+
+function form_submit(){
+  if ($("#acc_Code").val().trim()=='' ){
+    alert('Missing data');
+    return false;
+  }
+  else{
+    showPleaseWait("The file is being downloaded and parsed, please wait")
+    document.getElementById("form").submit();     
+  }
+
+
+}
+</script>
+
+
+<div class="container">
+  <div class="col-sm-8" >
+    <div class="panel panel-default">
+      <div class="panel-heading">Bring the dataset</div>
+      <div class="panel-body">
+        <form method="POST" action="/data_list/" class="form-horizontal" id="form">
+          <div class="form-group">
+            <label for="acc_Code" class="col-sm-2 control-label">acc Code</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="acc_Code" name="acc_Code" placeholder="acc Code">
+            </div>
+          </div>
+          <div class="form-group ">
+            <label for="Platform" class="col-sm-2 control-label">Platform *</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="Platform" name="Platform" placeholder="Platform">
+            </div>
+          </div>
+          <div class="form-group" >
+            <div class="col-sm-10">
+              <button onclick="form_submit()" class="btn btn-primary mb-2">Bring the dataset</button>
+            </div>
+            
+          </div>
+
+        </form>
+        <small>*You can leave the platform value blank if it is the only platform</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4" >
+    <div class="panel panel-default">
+      <div class="panel-body">
+        For Example 1 : 
+        </br>
+          acc Code : GSE5507
+        </br>
+        Platform :
+        <hr>
+        For Example 2 : 
+        </br>
+          acc Code : GSE1460
+        </br>
+          Platform : GPL96
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+
+{% endblock %}

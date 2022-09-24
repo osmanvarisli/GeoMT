@@ -1,0 +1,23 @@
+    {% for row in row_data %}
+    <tr>
+        {% for  row_ in row %}
+            {% if not(loop.index in sutun_index ) %}
+                
+                {% if row_|float <= down|float %}
+                    <td class="success" >{{row_}}</td>
+                {% elif row_|float > up|float %}
+                    <td class="danger">{{row_}}</td>
+                {% else %}
+                    <td>{{row_}}</td>
+                {% endif %}           
+            {% else %}
+                <td>{{row_}}</td>
+            {% endif %}
+        {% endfor %}
+        <td>{% set id_ref = row[1].split('(') %}
+            <a href="/grafik/satir/{{id_ref[0]}}" data-toggle="modal" data-target="#modal-grafik" data-remote="false" class="btn btn-default">
+                Graph
+            </a>
+        </td>
+    </tr>
+    {% endfor %}

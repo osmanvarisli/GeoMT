@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Data List
+{% endblock %}
+
+{% block head %}
+{{parametreler.acc_Code}} Data List
+{% endblock %}
+
+{% block body %}
+
+
+<div class="container-fluid " style="height: 400px;"> 
+    <div class="border border-success" id="sol_katman" style="overflow: scroll;">
+
+        <table class="table table-sm table-hover ">
+            <colgroup>
+                {% for col in parametreler.column_names %}
+                 
+                    {% if col == 'ID_REF' %}
+                        <col class="renk2">
+                    {% elif col == 'IDENTIFIER' %}
+                        <col class="renk3">
+                    {% else %}
+                        <col class="yesil1x">
+                    {% endif %}
+                {% endfor %}
+        
+            </colgroup>
+            <thead class="renk3x">
+            <tr>
+                {% for col in parametreler.column_names %}
+                <th> 
+                    {{col}}
+                </th>
+                {% endfor %}
+            </tr>
+            </thead>
+            {% for row in parametreler.row_data %}
+            <tr>
+                {% for col, row_ in zip(parametreler.column_names, row) %}
+                <td>{{row_}}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+
+        </table>
+
+    </div>     
+    <div class="border border-success" id="sag_katman" style="overflow: scroll;"> 
+        <form action="/normalization/" method="POST" id="norm_form">
+            <input type="hidden" name="acc_Code" value="{{parametreler.acc_Code}}">
+            <input type="hidden" name="Platform" value="{{parametreler.Platform}}">
+            <button class="btn btn-success" type="submit" >Normalization</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
